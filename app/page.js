@@ -1,6 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const loadingMessages = [
+  "Understanding your preferences…",
+  "Comparing NYC neighborhoods…",
+  "Evaluating budget, commute, and lifestyle fit…",
+  "Ranking your strongest matches…",
+  "Preparing your personalized recommendations…",
+];
 
 const transportationMap = {
   any: ["no-preference"],
@@ -33,10 +41,26 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+
+  useEffect(() => {
+    if (!isLoading) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      setLoadingStep((currentStep) =>
+        Math.min(currentStep + 1, loadingMessages.length - 1),
+      );
+    }, 4500);
+
+    return () => window.clearInterval(interval);
+  }, [isLoading]);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    setLoadingStep(0);
     setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
@@ -246,8 +270,10 @@ export default function Home() {
             </p>
           )}
 
+          {isLoading && <LoadingProgress currentStep={loadingStep} />}
+
           <button type="submit" disabled={isLoading} className="analyze-button mt-8 w-full disabled:cursor-not-allowed disabled:opacity-60">
-            {isLoading ? "Analyzing your preferences…" : "Analyze My Best Match"}
+            {isLoading ? "Finding your best matches…" : "Analyze My Best Match"}
           </button>
         </form>
       </section>
@@ -277,6 +303,45 @@ function FormField({ label, htmlFor, children }) {
         {label}
       </label>
       {children}
+    </div>
+  );
+}
+
+function LoadingProgress({ currentStep }) {
+  const progress = ((currentStep + 1) / loadingMessages.length) * 100;
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="mt-6 rounded-2xl border border-blue-200 bg-blue-50/80 p-5"
+    >
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600"
+        />
+        <div>
+          <p className="font-semibold text-blue-900">
+            {loadingMessages[currentStep]}
+          </p>
+          <p className="mt-1 text-sm text-blue-700">
+            This usually takes around 15–30 seconds.
+          </p>
+        </div>
+      </div>
+
+      <div
+        className="mt-4 h-2 overflow-hidden rounded-full bg-blue-100"
+        aria-hidden="true"
+      >
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-blue-500 to-sky-400 transition-[width] duration-700 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <span className="sr-only">Recommendation request in progress.</span>
     </div>
   );
 }
