@@ -1,28 +1,124 @@
 import { GEMINI_MODEL, gemini } from "@/lib/gemini";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+
+const MAX_BODY_BYTES = 8_000;
+const MAX_PROMPT_LENGTH = 1_500;
+
+function isSameOrigin(request) {
+  if (process.env.NODE_ENV !== "production") {
+    return true;
+  }
+
+  const origin = request.headers.get("origin");
+  const host =
+    request.headers.get("x-forwarded-host") || request.headers.get("host");
+  const protocol = request.headers.get("x-forwarded-proto") || "https";
+
+  return Boolean(origin && host && origin === `${protocol}://${host}`);
+}
+
+function rateLimitHeaders(rateLimit) {
+  return {
+    "Cache-Control": "no-store",
+    "X-RateLimit-Limit": "5",
+    "X-RateLimit-Remaining": String(rateLimit.remaining),
+    "X-RateLimit-Reset": String(Math.ceil(rateLimit.resetAt / 1000)),
+  };
+}
 
 export async function POST(request) {
+  if (!isSameOrigin(request)) {
+    return Response.json(
+      { error: "Requests must come from this application." },
+      { status: 403 },
+    );
+  }
+
+  if (!request.headers.get("content-type")?.includes("application/json")) {
+    return Response.json(
+      { error: "Content-Type must be application/json." },
+      { status: 415 },
+    );
+  }
+
+  const contentLength = Number(request.headers.get("content-length") || 0);
+
+  if (contentLength > MAX_BODY_BYTES) {
+    return Response.json({ error: "Request is too large." }, { status: 413 });
+  }
+
+  const rateLimit = checkRateLimit(getClientIp(request));
+  const headers = rateLimitHeaders(rateLimit);
+
+  if (!rateLimit.allowed) {
+    return Response.json(
+      { error: "Too many requests. Please wait and try again." },
+      {
+        status: 429,
+        headers: {
+          ...headers,
+          "Retry-After": String(
+            Math.max(1, Math.ceil((rateLimit.resetAt - Date.now()) / 1000)),
+          ),
+        },
+      },
+    );
+  }
+
   try {
-    const { prompt } = await request.json();
+    const rawBody = await request.text();
+
+    if (new TextEncoder().encode(rawBody).length > MAX_BODY_BYTES) {
+      return Response.json(
+        { error: "Request is too large." },
+        { status: 413, headers },
+      );
+    }
+
+    let body;
+
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return Response.json(
+        { error: "Request body must be valid JSON." },
+        { status: 400, headers },
+      );
+    }
+
+    const { prompt } = body;
 
     if (typeof prompt !== "string" || !prompt.trim()) {
       return Response.json(
         { error: "A non-empty prompt is required." },
-        { status: 400 },
+        { status: 400, headers },
+      );
+    }
+
+    const cleanPrompt = prompt.trim();
+
+    if (cleanPrompt.length > MAX_PROMPT_LENGTH) {
+      return Response.json(
+        { error: `Prompt must be ${MAX_PROMPT_LENGTH} characters or fewer.` },
+        { status: 400, headers },
       );
     }
 
     const response = await gemini.models.generateContent({
       model: GEMINI_MODEL,
-      contents: prompt.trim(),
+      contents: cleanPrompt,
     });
 
-    return Response.json({ model: GEMINI_MODEL, text: response.text });
+    return Response.json(
+      { model: GEMINI_MODEL, text: response.text },
+      { headers },
+    );
   } catch (error) {
     console.error("Gemini request failed:", error);
 
     return Response.json(
       { error: "Gemini could not process the request." },
-      { status: 502 },
+      { status: 502, headers },
     );
   }
 }
