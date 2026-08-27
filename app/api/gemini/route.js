@@ -1,5 +1,9 @@
 import { GEMINI_MODEL, gemini } from "@/lib/gemini";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import {
+  NYC_RECOMMENDATION_SCHEMA,
+  NYC_RECOMMENDATION_SYSTEM_INSTRUCTION,
+} from "@/lib/recommendation-prompt";
 
 const MAX_BODY_BYTES = 8_000;
 const MAX_PROMPT_LENGTH = 1_500;
@@ -107,10 +111,17 @@ export async function POST(request) {
     const response = await gemini.models.generateContent({
       model: GEMINI_MODEL,
       contents: cleanPrompt,
+      config: {
+        systemInstruction: NYC_RECOMMENDATION_SYSTEM_INSTRUCTION,
+        responseMimeType: "application/json",
+        responseSchema: NYC_RECOMMENDATION_SCHEMA,
+      },
     });
 
+    const result = JSON.parse(response.text);
+
     return Response.json(
-      { model: GEMINI_MODEL, text: response.text },
+      { model: GEMINI_MODEL, result },
       { headers },
     );
   } catch (error) {
