@@ -123,14 +123,16 @@ export default function Home() {
 
   return (
     <main className="min-h-screen text-slate-900">
-      <section className="bg-gradient-to-r from-blue-400 via-blue-300 to-sky-200 px-6 py-20 text-center text-white shadow-lg">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          NestMapper-NYC
-        </h1>
-        <p className="mx-auto mt-4 max-w-5xl text-lg text-blue-600 md:text-xl">
-          Find your best-fit apartment in your ideal neighborhood.
-        </p>
-      </section>
+    {/* Header */}
+    <section className="bg-gradient-to-r from-blue-400 via-blue-300 to-sky-200 px-6 py-20 text-center text-slate-800 shadow-lg">
+      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+        NestMapper-NYC
+      </h1>
+
+      <p className="mx-auto mt-4 max-w-5xl text-lg text-blue-900 md:text-xl md:whitespace-nowrap">
+        Find your best-fit apartment in your ideal neighborhood.
+      </p>
+    </section>
 
       <section className="mx-auto max-w-5xl px-6 py-12">
         <form
@@ -277,8 +279,11 @@ export default function Home() {
           </button>
         </form>
       </section>
-
-      <section id="recommendations" className="mx-auto min-h-32 max-w-5xl scroll-mt-8 px-6 pb-20 pt-6" aria-live="polite">
+       <section
+        id="recommendations"
+        className="mx-auto min-h-32 max-w-5xl scroll-mt-8 px-6 pb-20 pt-6"
+        aria-live="polite"
+      >
         {result ? (
           <RecommendationResults result={result} />
         ) : (
@@ -295,6 +300,7 @@ export default function Home() {
     </main>
   );
 }
+
 
 function FormField({ label, htmlFor, children }) {
   return (
@@ -427,7 +433,6 @@ function ResultCard({ recommendation }) {
           {recommendation.tradeoffs.map((tradeoff) => <li key={tradeoff}>{tradeoff}</li>)}
         </ul>
       </div>
-
       <p className="mt-5 border-t border-blue-100 pt-4 text-xs leading-5 text-slate-500">
         {recommendation.verificationNote}
       </p>
