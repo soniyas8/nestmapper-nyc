@@ -1,0 +1,123 @@
+{
+  "frontendRequest": {
+    "method": "POST",
+    "endpoint": "/api/gemini",
+    "contentType": "application/json",
+    "body": {
+      "budget": 4000,
+      "preferredBorough": "Brooklyn",
+      "commuteLocation": "Midtown Manhattan",
+      "lifestyle": [
+        "quiet",
+        "parks-and-outdoors"
+      ],
+      "transportation": [
+        "subway",
+        "walking"
+      ],
+      "requiredAmenities": [
+        "laundry",
+        "elevator"
+      ],
+      "bedrooms": "1",
+      "pet": "Dog",
+      "safetyPreference": "important",
+      "additionalPreferences": "Prefer a residential street near restaurants."
+    }
+  },
+  "backendSuccessResponse": {
+    "model": "gemini-3.6-flash",
+    "fallbackUsed": false,
+    "result": {
+      "bestMatch": "Park Slope",
+      "summary": "Park Slope is the strongest overall example match for these preferences.",
+      "dataCaveat": "Neighborhood details, rents, commute conditions, and listing availability must be verified because they can change.",
+      "recommendations": [
+        {
+          "rank": 1,
+          "neighborhood": "Park Slope",
+          "zipCode": "11215",
+          "borough": "Brooklyn",
+          "matchScore": 92,
+          "estimatedMonthlyRent": "$3,000-$4,000 for a one-bedroom apartment",
+          "reasons": [
+            "Offers access to parks and residential streets.",
+            "Has subway options for travel toward Midtown."
+          ],
+          "tradeoffs": [
+            "Apartments near the requested amenities may approach the maximum budget.",
+            "Commute time varies by address and subway service."
+          ],
+          "verificationNote": "Verify the current rent, pet policy, amenities, and commute before applying.",
+          "listings": [
+            {
+              "id": "RENTCAST_LISTING_ID",
+              "address": "RENTCAST_FORMATTED_ADDRESS",
+              "price": 3850,
+              "bedrooms": 1,
+              "bathrooms": 1,
+              "squareFootage": 700,
+              "status": "Active",
+              "listedDate": "2026-08-27T00:00:00.000Z",
+              "lastSeenDate": "2026-08-27T00:00:00.000Z",
+              "latitude": 40.672,
+              "longitude": -73.977
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "neighborhood": "Prospect Heights",
+          "zipCode": "11238",
+          "borough": "Brooklyn",
+          "matchScore": 87,
+          "estimatedMonthlyRent": "$3,100-$4,000 for a one-bedroom apartment",
+          "reasons": [
+            "Provides access to parks, restaurants, and subway lines."
+          ],
+          "tradeoffs": [
+            "Available apartments may be smaller within the selected budget."
+          ],
+          "verificationNote": "Verify live availability and building amenities.",
+          "listings": []
+        },
+        {
+          "rank": 3,
+          "neighborhood": "Windsor Terrace",
+          "zipCode": "11218",
+          "borough": "Brooklyn",
+          "matchScore": 82,
+          "estimatedMonthlyRent": "$2,700-$3,700 for a one-bedroom apartment",
+          "reasons": [
+            "Generally fits the requested quieter, park-oriented lifestyle."
+          ],
+          "tradeoffs": [
+            "There may be fewer apartment and transit options than in denser neighborhoods."
+          ],
+          "verificationNote": "Check the exact commute and current listing details.",
+          "listings": []
+        }
+      ]
+    }
+  },
+  "backendErrorResponses": {
+    "validationError": {
+      "status": 400,
+      "body": {
+        "error": "Customer preferences are invalid.",
+        "fields": [
+          {
+            "field": "budget",
+            "message": "Budget must be at least $500 per month."
+          }
+        ]
+      }
+    },
+    "quotaError": {
+      "status": 429,
+      "body": {
+        "error": "Gemini's request limit has been reached. Please try again after the quota resets or enable billing for the Gemini API project."
+      }
+    }
+  }
+}
