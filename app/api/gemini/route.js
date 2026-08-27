@@ -1,4 +1,9 @@
 import { GEMINI_MODEL, gemini } from "@/lib/gemini";
+import {
+  customerPreferencesSchema,
+  formatPreferencesForGemini,
+  formatValidationErrors,
+} from "@/lib/customer-preferences";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import {
   NYC_RECOMMENDATION_SCHEMA,
@@ -6,7 +11,6 @@ import {
 } from "@/lib/recommendation-prompt";
 
 const MAX_BODY_BYTES = 8_000;
-const MAX_PROMPT_LENGTH = 1_500;
 
 function isSameOrigin(request) {
   if (process.env.NODE_ENV !== "production") {
@@ -90,27 +94,21 @@ export async function POST(request) {
       );
     }
 
-    const { prompt } = body;
+    const validation = customerPreferencesSchema.safeParse(body);
 
-    if (typeof prompt !== "string" || !prompt.trim()) {
+    if (!validation.success) {
       return Response.json(
-        { error: "A non-empty prompt is required." },
-        { status: 400, headers },
-      );
-    }
-
-    const cleanPrompt = prompt.trim();
-
-    if (cleanPrompt.length > MAX_PROMPT_LENGTH) {
-      return Response.json(
-        { error: `Prompt must be ${MAX_PROMPT_LENGTH} characters or fewer.` },
+        {
+          error: "Customer preferences are invalid.",
+          fields: formatValidationErrors(validation.error),
+        },
         { status: 400, headers },
       );
     }
 
     const response = await gemini.models.generateContent({
       model: GEMINI_MODEL,
-      contents: cleanPrompt,
+      contents: formatPreferencesForGemini(validation.data),
       config: {
         systemInstruction: NYC_RECOMMENDATION_SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",

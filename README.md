@@ -34,3 +34,32 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Neighborhood recommendation API
+
+Send validated customer preferences to `POST /api/gemini` as JSON:
+
+```json
+{
+  "budget": 3000,
+  "preferredBorough": "Queens",
+  "commuteLocation": "Midtown Manhattan",
+  "lifestyle": ["quiet", "food-and-dining", "parks-and-outdoors"],
+  "transportation": ["subway", "walking"],
+  "requiredAmenities": ["dog park", "grocery stores"],
+  "bedrooms": "1",
+  "pet": "Dog",
+  "additionalPreferences": "Prefer a quieter street."
+}
+```
+
+Supported lifestyle values are `quiet`, `social`, `food-and-dining`,
+`nightlife`, `parks-and-outdoors`, `arts-and-culture`, `shopping`, `fitness`,
+and `community-oriented`.
+
+Supported transportation values are `subway`, `bus`, `walking`, `biking`,
+`car`, `ferry`, and `commuter-rail`.
+
+Invalid input returns HTTP `400` with a `fields` array containing field-level
+validation messages. The endpoint also enforces same-origin requests, request
+size limits, and per-IP rate limiting.
