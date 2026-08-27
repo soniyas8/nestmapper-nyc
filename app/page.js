@@ -2,14 +2,13 @@ export default function Home() {
   return (
     <main className="min-h-screen text-slate-900">
       {/* Header */}
-      <section className="bg-gradient-to-r from-blue-700 via-blue-600 to-sky-500 px-6 py-20 text-center text-white shadow-lg">
+      <section className="bg-gradient-to-r from-blue-400 via-blue-300 to-sky-200 px-6 py-20 text-center text-white shadow-lg">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           NestMapper-NYC
         </h1>
 
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-blue-100">
-          Find the NYC neighborhood that best matches your budget,
-          lifestyle, and apartment preferences.
+        <p className="mx-auto mt-4 max-w-5xl text-lg text-blue-600 md:text-xl md:whitespace-nowrap">
+          Find your best-fit apartment in your ideal neighbohood.
         </p>
       </section>
 
@@ -85,6 +84,41 @@ export default function Home() {
                 <option>4.5+ / 5</option>
               </select>
             </div>
+          
+
+            {/* Transportation */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
+                Transportation
+              </label>
+
+              <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none">
+                <option>Any Transportation</option>
+                <option>Near Subway</option>
+                <option>Easy Manhattan Commute</option>
+                <option>Multiple Transit Options</option>
+                <option>Bus Access</option>
+              </select>
+            </div>
+
+            {/* Lifestyle & Amenities */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
+                Lifestyle & Amenities
+              </label>
+
+              <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none">
+                <option>Any Lifestyle & Amenities</option>
+                <option>Quiet</option>
+                <option>Family-Friendly</option>
+                <option>Nightlife</option>
+                <option>Restaurants</option>
+                <option>Parks</option>
+                <option>Grocery Stores</option>
+                <option>Shopping</option>
+                <option>Walkable</option>
+              </select>
+            </div>
           </div>
 
           {/* Additional Requirements */}
@@ -103,7 +137,7 @@ export default function Home() {
           {/* Apartment Area */}
           <div className="mt-7">
             <label className="mb-2 block text-sm font-semibold text-slate-700">
-              Apartment Area
+              Preferred Borough
             </label>
 
             <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none">
@@ -194,6 +228,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <footer className="border-t border-blue-100 bg-white/80 px-6 py-6 text-center text-sm text-slate-500">
+        <p> © 2026 NestMapper-NYC </p>
+        <p> Gemini AI-powered NYC Apartment Matching</p>
+      </footer>
+
     </main>
   );
 }
