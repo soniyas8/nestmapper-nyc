@@ -69,3 +69,10 @@ customer priority; the API does not fabricate neighborhood safety ratings.
 Invalid input returns HTTP `400` with a `fields` array containing field-level
 validation messages. The endpoint also enforces same-origin requests, request
 size limits, and per-IP rate limiting.
+
+The recommendation endpoint uses the stable `gemini-3.6-flash` model by
+default. Set `GEMINI_MODEL=gemini-3.7-flash` to opt into 3.7. If an opted-in
+model returns a temporary HTTP `503` high-demand response, the endpoint
+automatically retries the validated request with `gemini-3.6-flash`. The
+response includes `model` and `fallbackUsed` so the caller can see which model
+produced the result.

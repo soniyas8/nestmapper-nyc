@@ -1,4 +1,8 @@
-import { GEMINI_MODEL, gemini } from "@/lib/gemini";
+import {
+  GEMINI_FALLBACK_MODEL,
+  GEMINI_MODEL,
+  gemini,
+} from "@/lib/gemini";
 import {
   customerPreferencesSchema,
   formatPreferencesForGemini,
@@ -106,20 +110,45 @@ export async function POST(request) {
       );
     }
 
-    const response = await gemini.models.generateContent({
-      model: GEMINI_MODEL,
+    const modelRequest = {
       contents: formatPreferencesForGemini(validation.data),
       config: {
         systemInstruction: NYC_RECOMMENDATION_SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
         responseSchema: NYC_RECOMMENDATION_SCHEMA,
       },
-    });
+    };
+
+    let model = GEMINI_MODEL;
+    let response;
+
+    try {
+      response = await gemini.models.generateContent({
+        ...modelRequest,
+        model,
+      });
+    } catch (error) {
+      if (
+        error?.status !== 503 ||
+        GEMINI_MODEL === GEMINI_FALLBACK_MODEL
+      ) {
+        throw error;
+      }
+
+      console.warn(
+        `${GEMINI_MODEL} is busy; retrying with ${GEMINI_FALLBACK_MODEL}.`,
+      );
+      model = GEMINI_FALLBACK_MODEL;
+      response = await gemini.models.generateContent({
+        ...modelRequest,
+        model,
+      });
+    }
 
     const result = JSON.parse(response.text);
 
     return Response.json(
-      { model: GEMINI_MODEL, result },
+      { model, fallbackUsed: model !== GEMINI_MODEL, result },
       { headers },
     );
   } catch (error) {
