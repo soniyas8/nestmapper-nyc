@@ -49,6 +49,7 @@ Send validated customer preferences to `POST /api/gemini` as JSON:
   "requiredAmenities": ["dog park", "grocery stores"],
   "bedrooms": "1",
   "pet": "Dog",
+  "safetyPreference": "very-important",
   "additionalPreferences": "Prefer a quieter street."
 }
 ```
@@ -59,6 +60,11 @@ and `community-oriented`.
 
 Supported transportation values are `subway`, `bus`, `walking`, `biking`,
 `car`, `ferry`, and `commuter-rail`.
+
+Supported bedroom values are `Studio`, `1`, `2`, `3`, and `4+`. Supported pet
+values are `None`, `Dog`, `Cat`, and `Other`. Supported safety preferences are
+`no-preference`, `important`, and `very-important`. Safety is treated as a
+customer priority; the API does not fabricate neighborhood safety ratings.
 
 Invalid input returns HTTP `400` with a `fields` array containing field-level
 validation messages. The endpoint also enforces same-origin requests, request
