@@ -2,13 +2,13 @@ export default function Home() {
   return (
     <main className="min-h-screen text-slate-900">
       {/* Header */}
-      <section className="bg-gradient-to-r from-blue-400 via-blue-300 to-sky-200 px-6 py-20 text-center text-white shadow-lg">
+      <section className="bg-gradient-to-r from-blue-400 via-blue-300 to-sky-200 px-6 py-20 text-center text-slate-800 shadow-lg">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           NestMapper-NYC
         </h1>
 
-        <p className="mx-auto mt-4 max-w-5xl text-lg text-blue-600 md:text-xl md:whitespace-nowrap">
-          Find your best-fit apartment in your ideal neighbohood.
+        <p className="mx-auto mt-4 max-w-5xl text-lg text-blue-900 md:text-xl md:whitespace-nowrap">
+          Find your best-fit apartment in your ideal neighborhood.
         </p>
       </section>
 
@@ -164,11 +164,11 @@ export default function Home() {
       <section className="mx-auto max-w-5xl px-6 pb-20 pt-6">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-slate-900">
-            Top 3 Results
+            Top 3 Neighborhood Matches
           </h2>
 
           <p className="mt-2 text-slate-500">
-            Recommended neighborhoods based on your preferences.
+            Explore the best neighborhoods and apartment options based on your preferences.
           </p>
         </div>
 
@@ -180,7 +180,19 @@ export default function Home() {
             score="92%"
             rent="$2,350"
             safety="4.5 / 5"
-            description="Affordable, quiet, safe, and close to parks and subway access."
+            apartments={[
+              {
+                name: "1 Bedroom Apartment",
+                price: "$2,300/mo",
+                details: "Pet Friendly · Near Subway",
+              },
+              {
+              name: "Studio Apartment",
+              price: "$2,150/mo",
+              details: "Laundry · Elevator",
+              },
+            ]}
+            
           />
 
           <ResultCard
@@ -190,7 +202,18 @@ export default function Home() {
             score="87%"
             rent="$2,650"
             safety="4.2 / 5"
-            description="Great transportation, restaurants, and convenient access to Manhattan."
+            apartments={[
+              {
+                name: "1 Bedroom Apartment",
+                price: "$2,600/mo",
+                details: "Near Subway · Restaurants",
+              },
+              {
+                name: "Studio Apartment",
+                price: "$2,400/mo",
+                details: "Pet Friendly · Laundry",
+              },
+            ]}  
           />
 
           <ResultCard
@@ -200,7 +223,18 @@ export default function Home() {
             score="83%"
             rent="$2,400"
             safety="4.1 / 5"
-            description="A quieter residential neighborhood with good transportation options."
+            apartments={[
+              {
+                name: "1 Bedroom Apartment",
+                price: "$2,350/mo",
+                details: "Quiet Area · Near Subway",
+              },
+              {
+                name: "Studio Apartment",
+                price: "$2,200/mo",
+                details: "Elevator · Grocery Nearby",
+              },
+            ]} 
           />
         </div>
 
@@ -211,22 +245,55 @@ export default function Home() {
           </p>
 
           <h3 className="mt-2 text-2xl font-bold text-slate-900">
-            Best Option: Bay Ridge
+            Best Overall Match: Bay Ridge + 1 Bedroom Apartment
           </h3>
 
           <p className="mt-4 leading-7 text-slate-600">
-            Bay Ridge is the best overall option because it offers the
-            strongest balance of affordable rent, safety, neighborhood
-            environment, and access to transportation and local amenities.
+            Bay Ridge offers the strongest overall balance of affordability,
+            safety, transportation access, and apartment features based on your
+            selected preferences.
           </p>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <SummaryItem text="Affordable monthly rent" />
-            <SummaryItem text="High safety rating" />
-            <SummaryItem text="Quiet neighborhood" />
-            <SummaryItem text="Good transportation access" />
-          </div>
+        {/* Strengths */}
+        <div className="mt-6">
+          <h4 className="mb-3 font-bold text-slate-900">
+            Why It Stands Out
+          </h4>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <SummaryItem text="Within your preferred monthly budget" />
+          <SummaryItem text="Highest safety score among the top matches" />
+          <SummaryItem text="Apartment meets your bedroom and pet preferences" />
+          <SummaryItem text="Good access to transportation and local amenities" />
         </div>
+        </div>
+
+        {/* Trade-offs */}
+        <div className="mt-6 rounded-2xl bg-white/70 p-5">
+          <h4 className="font-bold text-slate-900">
+            Trade-offs
+          </h4>
+
+        <p className="mt-2 leading-6 text-slate-600">
+          Bay Ridge may have a longer commute than Astoria. Astoria provides
+          stronger nightlife and Manhattan access, but its matching apartments
+          are generally more expensive.
+        </p>
+        </div>
+
+        {/* Final Recommendation */}
+        <div className="mt-6">
+          <h4 className="font-bold text-slate-900">
+          Final Recommendation
+        </h4>
+
+        <p className="mt-2 leading-6 text-slate-600">
+          Choose Bay Ridge if affordability, safety, and apartment value are
+          your highest priorities. Consider Astoria instead if commute time and
+          lifestyle options matter more to you.
+        </p>
+      </div>
+      </div>
       </section>
 
       <footer className="border-t border-blue-100 bg-white/80 px-6 py-6 text-center text-sm text-slate-500">
@@ -245,7 +312,7 @@ function ResultCard({
   score,
   rent,
   safety,
-  description,
+  apartments,
 }) {
   return (
     <div className="result-card rounded-2xl p-6">
@@ -291,9 +358,35 @@ function ResultCard({
         </div>
       </div>
 
-      <p className="mt-5 text-sm leading-6 text-slate-600">
-        {description}
-      </p>
+      {/* Top Apartments */}
+      <div className="mt-6 border-t border-slate-200 pt-4">
+        <h4 className="mb-3 text-sm font-bold text-slate-900">
+          Top Apartments
+        </h4>
+
+        <div className="space-y-3">
+          {apartments.map((apartment, index) => (
+            <div
+              key={index}
+              className="rounded-xl bg-blue-50 p-3"
+            >
+              <div className="flex justify-between gap-3">
+                <span className="text-sm font-semibold text-slate-800">
+                  {apartment.name}
+                </span>
+
+                <span className="whitespace-nowrap text-sm font-bold text-blue-700">
+                  {apartment.price}
+                </span>
+              </div>
+
+              <p className="mt-1 text-xs text-slate-500">
+                {apartment.details}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
