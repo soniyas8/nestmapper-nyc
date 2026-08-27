@@ -16,6 +16,7 @@ import {
 } from "@/lib/recommendation-prompt";
 
 const MAX_BODY_BYTES = 8_000;
+const GEMINI_TIMEOUT_MS = 20_000;
 
 function isSameOrigin(request) {
   if (process.env.NODE_ENV !== "production") {
@@ -117,6 +118,10 @@ export async function POST(request) {
         systemInstruction: NYC_RECOMMENDATION_SYSTEM_INSTRUCTION,
         responseMimeType: "application/json",
         responseSchema: NYC_RECOMMENDATION_SCHEMA,
+        httpOptions: {
+          timeout: GEMINI_TIMEOUT_MS,
+          retryOptions: { attempts: 1 },
+        },
       },
     };
 
@@ -163,6 +168,23 @@ export async function POST(request) {
       return Response.json(
         { error: "Gemini is busy right now. Please wait a moment and try again." },
         { status: 503, headers: { ...headers, "Retry-After": "30" } },
+      );
+    }
+
+    if (error?.status === 429) {
+      return Response.json(
+        {
+          error:
+            "Gemini's request limit has been reached. Please try again after the quota resets or enable billing for the Gemini API project.",
+        },
+        { status: 429, headers: { ...headers, "Retry-After": "60" } },
+      );
+    }
+
+    if (error?.status === 504) {
+      return Response.json(
+        { error: "Gemini took too long to respond. Please try again." },
+        { status: 504, headers },
       );
     }
 

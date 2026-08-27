@@ -92,11 +92,15 @@ export default function Home() {
     };
 
     try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 30_000);
       const response = await fetch("/api/gemini", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+      window.clearTimeout(timeout);
       const data = await response.json();
 
       if (!response.ok) {
@@ -115,7 +119,11 @@ export default function Home() {
       });
     } catch (requestError) {
       setResult(null);
-      setError(requestError.message || "Unable to get recommendations.");
+      setError(
+        requestError.name === "AbortError"
+          ? "The recommendation request took too long. Please try again."
+          : requestError.message || "Unable to get recommendations.",
+      );
     } finally {
       setIsLoading(false);
     }
