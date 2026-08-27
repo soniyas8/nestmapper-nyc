@@ -1,4 +1,102 @@
+"use client";
+
+import { useState } from "react";
+
+const transportationMap = {
+  any: ["no-preference"],
+  subway: ["subway", "walking"],
+  manhattan: ["subway", "commuter-rail"],
+  multiple: ["subway", "bus"],
+  bus: ["bus", "walking"],
+};
+
+const lifestyleMap = {
+  any: { lifestyle: ["no-preference"], amenities: [] },
+  quiet: { lifestyle: ["quiet"], amenities: [] },
+  community: { lifestyle: ["community-oriented"], amenities: [] },
+  nightlife: { lifestyle: ["nightlife", "social"], amenities: [] },
+  restaurants: { lifestyle: ["food-and-dining"], amenities: ["restaurants"] },
+  parks: { lifestyle: ["parks-and-outdoors"], amenities: ["parks"] },
+  groceries: {
+    lifestyle: ["community-oriented"],
+    amenities: ["grocery stores"],
+  },
+  shopping: { lifestyle: ["shopping"], amenities: ["shopping"] },
+  walkable: {
+    lifestyle: ["fitness"],
+    amenities: ["walkable streets"],
+    transportation: ["walking"],
+  },
+};
+
 export default function Home() {
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    const formData = new FormData(event.currentTarget);
+    const transportation = transportationMap[formData.get("transportation")];
+    const lifestyle = lifestyleMap[formData.get("lifestyle")];
+    const typedAmenities = String(formData.get("requiredAmenities") || "")
+      .split(",")
+      .map((amenity) => amenity.trim())
+      .filter(Boolean);
+
+    const payload = {
+      budget: Number(formData.get("budget")),
+      preferredBorough: formData.get("preferredBorough"),
+      commuteLocation: formData.get("commuteLocation"),
+      lifestyle: lifestyle.lifestyle,
+      transportation: [
+        ...new Set([
+          ...transportation,
+          ...(lifestyle.transportation || []),
+        ]),
+      ],
+      requiredAmenities: [
+        ...new Set([...lifestyle.amenities, ...typedAmenities]),
+      ],
+      bedrooms: formData.get("bedrooms"),
+      pet: formData.get("pet"),
+      safetyPreference: formData.get("safetyPreference"),
+      additionalPreferences: formData.get("additionalPreferences"),
+    };
+
+    try {
+      const response = await fetch("/api/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        const fieldErrors = data.fields
+          ?.map(({ field, message }) => `${field}: ${message}`)
+          .join(" ");
+        throw new Error(fieldErrors || data.error || "Request failed.");
+      }
+
+      setResult(data.result);
+      requestAnimationFrame(() => {
+        document.getElementById("recommendations")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    } catch (requestError) {
+      setResult(null);
+      setError(requestError.message || "Unable to get recommendations.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <main className="min-h-screen text-slate-900">
       {/* Header */}
@@ -8,156 +106,157 @@ export default function Home() {
         </h1>
 
         <p className="mx-auto mt-4 max-w-5xl text-lg text-blue-900 md:text-xl md:whitespace-nowrap">
+      <section className="bg-gradient-to-r from-blue-400 via-blue-300 to-sky-200 px-6 py-20 text-center text-white shadow-lg">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          NestMapper-NYC
+        </h1>
+        <p className="mx-auto mt-4 max-w-5xl text-lg text-blue-600 md:text-xl">
           Find your best-fit apartment in your ideal neighborhood.
         </p>
       </section>
 
-      {/* Preference Section */}
       <section className="mx-auto max-w-5xl px-6 py-12">
-        <div className="rounded-[28px] border border-blue-100 bg-white/95 p-8 shadow-xl shadow-blue-100/60 sm:p-10">
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-[28px] border border-blue-100 bg-white/95 p-8 shadow-xl shadow-blue-100/60 sm:p-10"
+        >
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-slate-900">
               Find Your Best Match
             </h2>
-
             <p className="mt-2 text-slate-500">
               Tell us what you&apos;re looking for in your next NYC apartment.
             </p>
           </div>
 
-          {/* 2 x 2 Preferences */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* Monthly Rent */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Monthly Rent
-              </label>
-
+            <FormField label="Monthly Rent" htmlFor="budget">
               <input
+                id="budget"
+                name="budget"
                 type="number"
-                placeholder="Enter monthly rent"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none"
+                min="500"
+                max="50000"
+                step="1"
+                required
+                placeholder="Enter maximum monthly rent"
+                className="form-control"
               />
-            </div>
+            </FormField>
 
-            {/* Pet */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Pet
-              </label>
-
-              <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none">
-                <option>Select pet preference</option>
-                <option>No Pet</option>
-                <option>Dog</option>
-                <option>Cat</option>
-                <option>Pet Friendly</option>
+            <FormField label="Pet" htmlFor="pet">
+              <select id="pet" name="pet" required className="form-control">
+                <option value="">Select pet preference</option>
+                <option value="None">No Pet</option>
+                <option value="Dog">Dog</option>
+                <option value="Cat">Cat</option>
+                <option value="Other">Other / Pet Friendly</option>
               </select>
-            </div>
+            </FormField>
 
-            {/* Bedroom */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Bedroom
-              </label>
-
-              <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none">
-                <option>Select bedroom</option>
-                <option>Studio</option>
-                <option>1 Bedroom</option>
-                <option>2 Bedrooms</option>
-                <option>3 Bedrooms</option>
-                <option>4+ Bedrooms</option>
+            <FormField label="Bedroom" htmlFor="bedrooms">
+              <select id="bedrooms" name="bedrooms" required className="form-control">
+                <option value="">Select bedroom</option>
+                <option value="Studio">Studio</option>
+                <option value="1">1 Bedroom</option>
+                <option value="2">2 Bedrooms</option>
+                <option value="3">3 Bedrooms</option>
+                <option value="4+">4+ Bedrooms</option>
               </select>
-            </div>
+            </FormField>
 
-            {/* Safety */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Safety Rating
-              </label>
-
-              <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none">
-                <option>Any Safety Rating</option>
-                <option>3+ / 5</option>
-                <option>4+ / 5</option>
-                <option>4.5+ / 5</option>
+            <FormField label="Safety Priority" htmlFor="safetyPreference">
+              <select id="safetyPreference" name="safetyPreference" className="form-control" defaultValue="no-preference">
+                <option value="no-preference">No Preference</option>
+                <option value="important">Important</option>
+                <option value="very-important">Very Important</option>
               </select>
-            </div>
-          
+            </FormField>
 
-            {/* Transportation */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Transportation
-              </label>
-
-              <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none">
-                <option>Any Transportation</option>
-                <option>Near Subway</option>
-                <option>Easy Manhattan Commute</option>
-                <option>Multiple Transit Options</option>
-                <option>Bus Access</option>
+            <FormField label="Transportation" htmlFor="transportation">
+              <select id="transportation" name="transportation" className="form-control" defaultValue="any">
+                <option value="any">Any Transportation</option>
+                <option value="subway">Near Subway</option>
+                <option value="manhattan">Easy Manhattan Commute</option>
+                <option value="multiple">Multiple Transit Options</option>
+                <option value="bus">Bus Access</option>
               </select>
-            </div>
+            </FormField>
 
-            {/* Lifestyle & Amenities */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Lifestyle & Amenities
-              </label>
-
-              <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none">
-                <option>Any Lifestyle & Amenities</option>
-                <option>Quiet</option>
-                <option>Family-Friendly</option>
-                <option>Nightlife</option>
-                <option>Restaurants</option>
-                <option>Parks</option>
-                <option>Grocery Stores</option>
-                <option>Shopping</option>
-                <option>Walkable</option>
+            <FormField label="Lifestyle & Amenities" htmlFor="lifestyle">
+              <select id="lifestyle" name="lifestyle" className="form-control" defaultValue="any">
+                <option value="any">Any Lifestyle</option>
+                <option value="quiet">Quiet</option>
+                <option value="community">Community-oriented</option>
+                <option value="nightlife">Nightlife</option>
+                <option value="restaurants">Restaurants</option>
+                <option value="parks">Parks</option>
+                <option value="groceries">Grocery Stores</option>
+                <option value="shopping">Shopping</option>
+                <option value="walkable">Walkable</option>
               </select>
-            </div>
+            </FormField>
+
+            <FormField label="Preferred Borough" htmlFor="preferredBorough">
+              <select id="preferredBorough" name="preferredBorough" className="form-control" defaultValue="Any">
+                <option value="Any">Any NYC Area</option>
+                <option value="Manhattan">Manhattan</option>
+                <option value="Brooklyn">Brooklyn</option>
+                <option value="Queens">Queens</option>
+                <option value="Bronx">Bronx</option>
+                <option value="Staten Island">Staten Island</option>
+              </select>
+            </FormField>
+
+            <FormField label="Commute Destination" htmlFor="commuteLocation">
+              <input
+                id="commuteLocation"
+                name="commuteLocation"
+                type="text"
+                maxLength="100"
+                required
+                placeholder="Example: Midtown Manhattan"
+                className="form-control"
+              />
+            </FormField>
           </div>
 
-          {/* Additional Requirements */}
           <div className="mt-7">
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
-              What matters most to you?
-            </label>
-
-            <textarea
-              rows="5"
-              placeholder="Tell us anything else you're looking for — near subway, quiet neighborhood, restaurants, nightlife, short commute, parks, schools, grocery stores..."
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none"
-            />
+            <FormField label="Required Amenities" htmlFor="requiredAmenities">
+              <input
+                id="requiredAmenities"
+                name="requiredAmenities"
+                type="text"
+                maxLength="300"
+                placeholder="Comma-separated: elevator, laundry, dog park"
+                className="form-control"
+              />
+            </FormField>
           </div>
 
-          {/* Apartment Area */}
           <div className="mt-7">
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
-              Preferred Borough
-            </label>
-
-            <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5 outline-none">
-              <option>Any NYC Area</option>
-              <option>Manhattan</option>
-              <option>Brooklyn</option>
-              <option>Queens</option>
-              <option>Bronx</option>
-              <option>Staten Island</option>
-            </select>
+            <FormField label="What matters most to you?" htmlFor="additionalPreferences">
+              <textarea
+                id="additionalPreferences"
+                name="additionalPreferences"
+                rows="5"
+                maxLength="500"
+                placeholder="Tell us anything else you're looking for..."
+                className="form-control resize-none"
+              />
+            </FormField>
           </div>
 
-          {/* Analyze Button */}
-          <button
-            type="button"
-            className="analyze-button mt-8 w-full"
-          >
-            Analyze My Best Match
+          {error && (
+            <p role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </p>
+          )}
+
+          <button type="submit" disabled={isLoading} className="analyze-button mt-8 w-full disabled:cursor-not-allowed disabled:opacity-60">
+            {isLoading ? "Analyzing your preferences…" : "Analyze My Best Match"}
           </button>
-        </div>
+        </form>
       </section>
 
       {/* Result Section */}
@@ -294,13 +393,20 @@ export default function Home() {
         </p>
       </div>
       </div>
+      <section id="recommendations" className="mx-auto min-h-32 max-w-5xl scroll-mt-8 px-6 pb-20 pt-6" aria-live="polite">
+        {result ? (
+          <RecommendationResults result={result} />
+        ) : (
+          <div className="rounded-2xl border border-dashed border-blue-200 bg-white/60 p-8 text-center text-slate-500">
+            Complete the form to receive three personalized NYC neighborhood recommendations.
+          </div>
+        )}
       </section>
 
       <footer className="border-t border-blue-100 bg-white/80 px-6 py-6 text-center text-sm text-slate-500">
-        <p> © 2026 NestMapper-NYC </p>
-        <p> Gemini AI-powered NYC Apartment Matching</p>
+        <p>© 2026 NestMapper-NYC</p>
+        <p>Gemini AI-powered NYC Apartment Matching</p>
       </footer>
-
     </main>
   );
 }
@@ -314,48 +420,76 @@ function ResultCard({
   safety,
   apartments,
 }) {
+function FormField({ label, htmlFor, children }) {
   return (
-    <div className="result-card rounded-2xl p-6">
-      <div className="flex items-start justify-between">
+    <div>
+      <label htmlFor={htmlFor} className="mb-2 block text-sm font-semibold text-slate-700">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function RecommendationResults({ result }) {
+  return (
+    <>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-slate-900">Top 3 Results</h2>
+        <p className="mt-2 text-slate-500">Recommended neighborhoods based on your preferences.</p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        {result.recommendations.map((recommendation) => (
+          <ResultCard key={recommendation.rank} recommendation={recommendation} />
+        ))}
+      </div>
+
+      <div className="mt-10 rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50 p-8 shadow-lg shadow-blue-100/50">
+        <p className="text-sm font-bold uppercase tracking-wider text-blue-600">✨ AI Summary</p>
+        <h3 className="mt-2 text-2xl font-bold text-slate-900">Best Option: {result.bestMatch}</h3>
+        <p className="mt-4 leading-7 text-slate-600">{result.summary}</p>
+        <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+          <strong>Verify current information:</strong> {result.dataCaveat}
+        </p>
+      </div>
+    </>
+  );
+}
+
+function ResultCard({ recommendation }) {
+  return (
+    <article className="result-card rounded-2xl p-6">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-blue-600">
-            #{rank} Match
-          </p>
-
-          <h3 className="mt-1 text-xl font-bold text-slate-900">
-            {area}
-          </h3>
-
-          <p className="text-sm text-slate-500">
-            {borough}
-          </p>
+          <p className="text-sm font-semibold text-blue-600">#{recommendation.rank} Match</p>
+          <h3 className="mt-1 text-xl font-bold text-slate-900">{recommendation.neighborhood}</h3>
+          <p className="text-sm text-slate-500">{recommendation.borough}</p>
         </div>
-
         <div className="rounded-full bg-blue-100 px-3 py-2 text-sm font-bold text-blue-700">
-          {score}
+          {recommendation.matchScore}%
         </div>
       </div>
 
-      <div className="mt-6 space-y-3 text-sm">
-        <div className="flex justify-between">
-          <span className="text-slate-500">
-            Average Rent
-          </span>
+      <div className="mt-6 text-sm">
+        <p className="text-slate-500">Estimated Rent</p>
+        <p className="mt-1 font-semibold text-slate-800">
+          {recommendation.estimatedMonthlyRent || "Not verified"}
+        </p>
+      </div>
 
-          <span className="font-semibold text-slate-800">
-            {rent}
-          </span>
-        </div>
+      <div className="mt-5">
+        <h4 className="text-sm font-semibold text-slate-800">Why it matches</h4>
+        <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-600">
+          {recommendation.reasons.map((reason) => <li key={reason}>{reason}</li>)}
+        </ul>
+      </div>
 
-        <div className="flex justify-between">
-          <span className="text-slate-500">
-            Safety
-          </span>
-
-          <span className="font-semibold text-slate-800">
-            {safety}
-          </span>
-        </div>
+      <div className="mt-5">
+        <h4 className="text-sm font-semibold text-slate-800">Tradeoffs</h4>
+        <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-600">
+          {recommendation.tradeoffs.map((tradeoff) => <li key={tradeoff}>{tradeoff}</li>)}
+        </ul>
       </div>
 
       {/* Top Apartments */}
@@ -388,14 +522,9 @@ function ResultCard({
         </div>
       </div>
     </div>
-  );
-}
-
-function SummaryItem({ text }) {
-  return (
-    <div className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 text-sm font-medium text-slate-700">
-      <span className="mr-2 text-blue-600">✓</span>
-      {text}
-    </div>
+      <p className="mt-5 border-t border-blue-100 pt-4 text-xs leading-5 text-slate-500">
+        {recommendation.verificationNote}
+      </p>
+    </article>
   );
 }
