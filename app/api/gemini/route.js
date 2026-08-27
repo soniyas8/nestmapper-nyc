@@ -125,6 +125,13 @@ export async function POST(request) {
   } catch (error) {
     console.error("Gemini request failed:", error);
 
+    if (error?.status === 503) {
+      return Response.json(
+        { error: "Gemini is busy right now. Please wait a moment and try again." },
+        { status: 503, headers: { ...headers, "Retry-After": "30" } },
+      );
+    }
+
     return Response.json(
       { error: "Gemini could not process the request." },
       { status: 502, headers },
