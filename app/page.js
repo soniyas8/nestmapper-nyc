@@ -99,13 +99,6 @@ export default function Home() {
 
   return (
     <main className="min-h-screen text-slate-900">
-      {/* Header */}
-      <section className="bg-gradient-to-r from-blue-400 via-blue-300 to-sky-200 px-6 py-20 text-center text-slate-800 shadow-lg">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          NestMapper-NYC
-        </h1>
-
-        <p className="mx-auto mt-4 max-w-5xl text-lg text-blue-900 md:text-xl md:whitespace-nowrap">
       <section className="bg-gradient-to-r from-blue-400 via-blue-300 to-sky-200 px-6 py-20 text-center text-white shadow-lg">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
           NestMapper-NYC
@@ -259,140 +252,6 @@ export default function Home() {
         </form>
       </section>
 
-      {/* Result Section */}
-      <section className="mx-auto max-w-5xl px-6 pb-20 pt-6">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900">
-            Top 3 Neighborhood Matches
-          </h2>
-
-          <p className="mt-2 text-slate-500">
-            Explore the best neighborhoods and apartment options based on your preferences.
-          </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          <ResultCard
-            rank="1"
-            area="Bay Ridge"
-            borough="Brooklyn"
-            score="92%"
-            rent="$2,350"
-            safety="4.5 / 5"
-            apartments={[
-              {
-                name: "1 Bedroom Apartment",
-                price: "$2,300/mo",
-                details: "Pet Friendly · Near Subway",
-              },
-              {
-              name: "Studio Apartment",
-              price: "$2,150/mo",
-              details: "Laundry · Elevator",
-              },
-            ]}
-            
-          />
-
-          <ResultCard
-            rank="2"
-            area="Astoria"
-            borough="Queens"
-            score="87%"
-            rent="$2,650"
-            safety="4.2 / 5"
-            apartments={[
-              {
-                name: "1 Bedroom Apartment",
-                price: "$2,600/mo",
-                details: "Near Subway · Restaurants",
-              },
-              {
-                name: "Studio Apartment",
-                price: "$2,400/mo",
-                details: "Pet Friendly · Laundry",
-              },
-            ]}  
-          />
-
-          <ResultCard
-            rank="3"
-            area="Sunnyside"
-            borough="Queens"
-            score="83%"
-            rent="$2,400"
-            safety="4.1 / 5"
-            apartments={[
-              {
-                name: "1 Bedroom Apartment",
-                price: "$2,350/mo",
-                details: "Quiet Area · Near Subway",
-              },
-              {
-                name: "Studio Apartment",
-                price: "$2,200/mo",
-                details: "Elevator · Grocery Nearby",
-              },
-            ]} 
-          />
-        </div>
-
-        {/* AI Summary */}
-        <div className="mt-10 rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50 p-8 shadow-lg shadow-blue-100/50">
-          <p className="text-sm font-bold uppercase tracking-wider text-blue-600">
-            ✨ AI Summary
-          </p>
-
-          <h3 className="mt-2 text-2xl font-bold text-slate-900">
-            Best Overall Match: Bay Ridge + 1 Bedroom Apartment
-          </h3>
-
-          <p className="mt-4 leading-7 text-slate-600">
-            Bay Ridge offers the strongest overall balance of affordability,
-            safety, transportation access, and apartment features based on your
-            selected preferences.
-          </p>
-
-        {/* Strengths */}
-        <div className="mt-6">
-          <h4 className="mb-3 font-bold text-slate-900">
-            Why It Stands Out
-          </h4>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <SummaryItem text="Within your preferred monthly budget" />
-          <SummaryItem text="Highest safety score among the top matches" />
-          <SummaryItem text="Apartment meets your bedroom and pet preferences" />
-          <SummaryItem text="Good access to transportation and local amenities" />
-        </div>
-        </div>
-
-        {/* Trade-offs */}
-        <div className="mt-6 rounded-2xl bg-white/70 p-5">
-          <h4 className="font-bold text-slate-900">
-            Trade-offs
-          </h4>
-
-        <p className="mt-2 leading-6 text-slate-600">
-          Bay Ridge may have a longer commute than Astoria. Astoria provides
-          stronger nightlife and Manhattan access, but its matching apartments
-          are generally more expensive.
-        </p>
-        </div>
-
-        {/* Final Recommendation */}
-        <div className="mt-6">
-          <h4 className="font-bold text-slate-900">
-          Final Recommendation
-        </h4>
-
-        <p className="mt-2 leading-6 text-slate-600">
-          Choose Bay Ridge if affordability, safety, and apartment value are
-          your highest priorities. Consider Astoria instead if commute time and
-          lifestyle options matter more to you.
-        </p>
-      </div>
-      </div>
       <section id="recommendations" className="mx-auto min-h-32 max-w-5xl scroll-mt-8 px-6 pb-20 pt-6" aria-live="polite">
         {result ? (
           <RecommendationResults result={result} />
@@ -411,15 +270,6 @@ export default function Home() {
   );
 }
 
-function ResultCard({
-  rank,
-  area,
-  borough,
-  score,
-  rent,
-  safety,
-  apartments,
-}) {
 function FormField({ label, htmlFor, children }) {
   return (
     <div>
@@ -432,6 +282,8 @@ function FormField({ label, htmlFor, children }) {
 }
 
 function RecommendationResults({ result }) {
+  const bestRecommendation = result.recommendations[0];
+
   return (
     <>
       <div className="mb-8">
@@ -447,8 +299,27 @@ function RecommendationResults({ result }) {
 
       <div className="mt-10 rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50 p-8 shadow-lg shadow-blue-100/50">
         <p className="text-sm font-bold uppercase tracking-wider text-blue-600">✨ AI Summary</p>
-        <h3 className="mt-2 text-2xl font-bold text-slate-900">Best Option: {result.bestMatch}</h3>
+        <h3 className="mt-2 text-2xl font-bold text-slate-900">Best Overall Match: {result.bestMatch}</h3>
         <p className="mt-4 leading-7 text-slate-600">{result.summary}</p>
+
+        <div className="mt-6">
+          <h4 className="mb-3 font-bold text-slate-900">Why It Stands Out</h4>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {bestRecommendation.reasons.map((reason) => (
+              <SummaryItem key={reason} text={reason} />
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl bg-white/70 p-5">
+          <h4 className="font-bold text-slate-900">Trade-offs</h4>
+          <ul className="mt-2 list-disc space-y-2 pl-5 leading-6 text-slate-600">
+            {bestRecommendation.tradeoffs.map((tradeoff) => (
+              <li key={tradeoff}>{tradeoff}</li>
+            ))}
+          </ul>
+        </div>
+
         <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
           <strong>Verify current information:</strong> {result.dataCaveat}
         </p>
@@ -492,39 +363,18 @@ function ResultCard({ recommendation }) {
         </ul>
       </div>
 
-      {/* Top Apartments */}
-      <div className="mt-6 border-t border-slate-200 pt-4">
-        <h4 className="mb-3 text-sm font-bold text-slate-900">
-          Top Apartments
-        </h4>
-
-        <div className="space-y-3">
-          {apartments.map((apartment, index) => (
-            <div
-              key={index}
-              className="rounded-xl bg-blue-50 p-3"
-            >
-              <div className="flex justify-between gap-3">
-                <span className="text-sm font-semibold text-slate-800">
-                  {apartment.name}
-                </span>
-
-                <span className="whitespace-nowrap text-sm font-bold text-blue-700">
-                  {apartment.price}
-                </span>
-              </div>
-
-              <p className="mt-1 text-xs text-slate-500">
-                {apartment.details}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
       <p className="mt-5 border-t border-blue-100 pt-4 text-xs leading-5 text-slate-500">
         {recommendation.verificationNote}
       </p>
     </article>
+  );
+}
+
+function SummaryItem({ text }) {
+  return (
+    <div className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 text-sm font-medium text-slate-700">
+      <span className="mr-2 text-blue-600">✓</span>
+      {text}
+    </div>
   );
 }
