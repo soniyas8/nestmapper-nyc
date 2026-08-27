@@ -1,3 +1,8 @@
+# Our Project: NestMapper NYC
+
+## Team Members
+Abubakar Ifttikhar, Shaoru Wu-Zhu, Soniya Sherpa, Faith Lin
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
@@ -35,50 +40,56 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-## Neighborhood recommendation API
+## Photo
 
-Send validated customer preferences to `POST /api/gemini` as JSON:
 
-```json
-{
-  "budget": 3000,
-  "preferredBorough": "Queens",
-  "commuteLocation": "Midtown Manhattan",
-  "lifestyle": ["quiet", "food-and-dining", "parks-and-outdoors"],
-  "transportation": ["subway", "walking"],
-  "requiredAmenities": ["dog park", "grocery stores"],
-  "bedrooms": "1",
-  "pet": "Dog",
-  "safetyPreference": "very-important",
-  "additionalPreferences": "Prefer a quieter street."
-}
-```
+## Inspiration
+Apartment hunting across New York's five boroughs can be difficult, with many factors influencing what type of place a person finds suitable to live in. With NYC being so diverse and having a multitude of neighborhood options, it can be overwhelming to find the ideal place to live. 
 
-Supported lifestyle values are `quiet`, `social`, `food-and-dining`,
-`nightlife`, `parks-and-outdoors`, `arts-and-culture`, `shopping`, `fitness`,
-and `community-oriented`.
+## How NestMapper NYC Works 
+NestMapper NYC provides users eight preferences they can choose to specify according to their needs. The preferences users can specify include monthly rent, bedroom count, pet allowance, safety priority, transportation, lifestyle & amenities, preferred borough, and commute destination. Users enter their monthly rent and commute destination (e.g. any). They can select the other six preferences using the dropdown boxes. Users can also include any required amenities they would like, as well as other specific living preferences in the "What matters most to you?" text box. 
 
-Supported transportation values are `subway`, `bus`, `walking`, `biking`,
-`car`, `ferry`, and `commuter-rail`.
+After the user enters all their preferences, the user clicks the Analyze My Best Match button to generate their neighborhood match. Using the integrated AI feature, the web page will display the top three neighborhood options, each with a percentage (shows how closely it matched to the user's preferences), estimated rent, an explanation on why the result is a match, and any tradeoffs. An AI summary explaining the top chosen recommendation will also be displayed. 
 
-Supported bedroom values are `Studio`, `1`, `2`, `3`, and `4+`. Supported pet
-values are `None`, `Dog`, `Cat`, and `Other`. Supported safety preferences are
-`no-preference`, `important`, and `very-important`. Safety is treated as a
-customer priority; the API does not fabricate neighborhood safety ratings.
+## Demo Script 
+1. User opens web application and selects their living preferences.
+2. User enters their preferred Monthly Rent and Commute Destination.
+3. User selects Pet, Bedroom, Safety Priority, Transportation, Lifestyle & Amenities, and Preferred Borough using the dropdown menu. 
+4. User has an option to type in any amenities they would like to have in the "Required Amenities" box.
+5. User has an option to type in any other specific preferences in the "What matters most to you?" text box.
+6. User selects which borough they would like to live in under Apartment Area.
+7. User presses the Analyze My Best Match button to recieve neighborhood and apartment results. 
 
-Invalid input returns HTTP `400` with a `fields` array containing field-level
-validation messages. The endpoint also enforces same-origin requests, request
-size limits, and per-IP rate limiting.
+## How We Built It
+For the web application user interface, we used JavaScript, Next.js, React, Tailwind CSS. For the backend of our application, we used a Gemini API key (from Google AI studio) and the gemini 3.6 AI model. JSON sends user preferences to the backend and returns recommendation results to the frontend. We also used AI tools to help us, including ChatGPT, Claude, and Codex. 
 
-The recommendation endpoint uses the stable `gemini-3.6-flash` model by
-default. Set `GEMINI_MODEL=gemini-3.7-flash` to opt into 3.7. If an opted-in
-model returns a temporary HTTP `503` high-demand response, the endpoint
-automatically retries the validated request with `gemini-3.6-flash`. The
-response includes `model` and `fallbackUsed` so the caller can see which model
-produced the result.
+## Challenges
+1. Finalizing our project idea and determining the exact result we would like the web application to produce
+2. Merging the UI (frontend) branch with the main branch
 
-Set `RENTCAST_API_KEY` locally and in Vercel to enrich each neighborhood with
-up to two verified active rental listings. Searches use the representative ZIP
-code supplied for the recommended neighborhood and filter by the customer&apos;s
-maximum budget and bedroom count. Exact addresses come only from RentCast and
-are never generated by Gemini.
+## Limitations & Tradeoffs
+We are not using a separate database or dataset with NYC apartment housing information to match those apartments with the user's preferences. We did not include a commute distance preference for the user to select how far away they are willing to live from school/work/etc. Due to the API Key limitation, the actual apartment address is not shown when the top neighborhoods recommendation results are shown. 
+
+## What We Learned
+1. Having a thorough plan and idea is important to implement it into a project.
+2. Communication and collaboration among team members is essential.
+3. Understanding how to use outside resources and tools helps with research and debugging.
+4. We learned how to incorporate the Gemini API key into our project.
+5. We learned how to reolve Git conflicts.
+
+## What's Next
+1. Neighborhood recommendations will include 2-3 apartment addresses
+2. Use a database with NYC apartment housing information
+3. Include a commute distance preference
+
+## Built With
+JavaScript, Next.js, React, Tailwind CSS, JSON, Gemini API Key, gemini 3.6 AI model, generative AI tools
+
+## Check It Out
+GitHub Repo link: https://github.com/soniyas8/nestmapper-nyc
+PPT Link: https://docs.google.com/presentation/d/13wmRoqmjyCUVAPBXCwZx7kXq-ClcbK8JB_gXMNc6lQg/edit?usp=sharing
+
+
+
+
+
