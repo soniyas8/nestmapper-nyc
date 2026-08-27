@@ -428,10 +428,65 @@ function ResultCard({ recommendation }) {
         </ul>
       </div>
 
+      <div className="mt-6 border-t border-blue-100 pt-5">
+        <h4 className="text-sm font-semibold text-slate-800">
+          Verified Active Apartments
+        </h4>
+        {recommendation.listings?.length ? (
+          <div className="mt-3 space-y-3">
+            {recommendation.listings.map((listing) => (
+              <ApartmentListing key={listing.id} listing={listing} />
+            ))}
+          </div>
+        ) : (
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            No matching active listing was found in this neighborhood for the
+            selected budget and bedroom count. Availability changes often.
+          </p>
+        )}
+      </div>
+
       <p className="mt-5 border-t border-blue-100 pt-4 text-xs leading-5 text-slate-500">
         {recommendation.verificationNote}
       </p>
     </article>
+  );
+}
+
+function ApartmentListing({ listing }) {
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(listing.address)}`;
+
+  return (
+    <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">
+            Active listing
+          </p>
+          <p className="mt-1 text-sm font-semibold leading-5 text-slate-900">
+            {listing.address}
+          </p>
+        </div>
+        <p className="whitespace-nowrap text-sm font-bold text-emerald-800">
+          ${listing.price.toLocaleString()}/mo
+        </p>
+      </div>
+
+      <p className="mt-2 text-xs text-slate-600">
+        {listing.bedrooms === 0 ? "Studio" : `${listing.bedrooms} bed`}
+        {listing.bathrooms != null ? ` · ${listing.bathrooms} bath` : ""}
+        {listing.squareFootage ? ` · ${listing.squareFootage.toLocaleString()} sq ft` : ""}
+      </p>
+
+      <a
+        href={mapsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-block text-xs font-semibold text-blue-700 underline underline-offset-2"
+      >
+        View address on map
+      </a>
+    </div>
   );
 }
 

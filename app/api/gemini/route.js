@@ -9,6 +9,7 @@ import {
   formatValidationErrors,
 } from "@/lib/customer-preferences";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { addVerifiedListings } from "@/lib/rentcast";
 import {
   NYC_RECOMMENDATION_SCHEMA,
   NYC_RECOMMENDATION_SYSTEM_INSTRUCTION,
@@ -146,6 +147,10 @@ export async function POST(request) {
     }
 
     const result = JSON.parse(response.text);
+    result.recommendations = await addVerifiedListings(
+      result.recommendations,
+      validation.data,
+    );
 
     return Response.json(
       { model, fallbackUsed: model !== GEMINI_MODEL, result },
